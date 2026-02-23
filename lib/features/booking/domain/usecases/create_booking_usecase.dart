@@ -9,6 +9,7 @@ class CreateBookingUseCase {
 
   ResultFuture<BookingEntity> call({
     required String vehicleId,
+    required String providerId,
     required String centerId,
     String? branchId,
     required ServiceType serviceType,
@@ -21,6 +22,7 @@ class CreateBookingUseCase {
   }) {
     return repository.createBooking(
       vehicleId: vehicleId,
+      providerId: providerId,
       centerId: centerId,
       branchId: branchId,
       serviceType: serviceType,

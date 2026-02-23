@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:331243296230:android:47af9ff4eab0966dd53227",
+        "mobilesdk_app_id": "1:331243296230:android:794304ae3d48bf63d53227",
         "android_client_info": {
-          "package_name": "com.example.washing_car"
+          "package_name": "com.glossy.app"
         }
       },
       "oauth_client": [],

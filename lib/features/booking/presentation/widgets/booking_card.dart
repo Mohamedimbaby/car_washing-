@@ -6,10 +6,7 @@ import '../../domain/entities/booking_entity.dart';
 class BookingCard extends StatelessWidget {
   final BookingEntity booking;
 
-  const BookingCard({
-    super.key,
-    required this.booking,
-  });
+  const BookingCard({super.key, required this.booking});
 
   Color _getStatusColor() {
     switch (booking.status) {
@@ -23,6 +20,8 @@ class BookingCard extends StatelessWidget {
         return AppColors.success;
       case BookingStatus.cancelled:
         return AppColors.error;
+      case BookingStatus.noShow:
+        return AppColors.textSecondary;
     }
   }
 
@@ -38,6 +37,8 @@ class BookingCard extends StatelessWidget {
         return 'Completed';
       case BookingStatus.cancelled:
         return 'Cancelled';
+      case BookingStatus.noShow:
+        return 'No Show';
     }
   }
 
@@ -52,7 +53,7 @@ class BookingCard extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -70,7 +71,7 @@ class BookingCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.1),
+                  color: _getStatusColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

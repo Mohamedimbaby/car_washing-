@@ -39,8 +39,11 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline,
-                      size: 64, color: AppColors.error),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: AppColors.error,
+                  ),
                   const SizedBox(height: 16),
                   Text(state.message),
                   const SizedBox(height: 16),
@@ -64,7 +67,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                     Icon(
                       Icons.event_busy,
                       size: 80,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -126,8 +129,11 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.calendar_today,
-                    size: 16, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   DateFormat('MMM dd, yyyy').format(booking.scheduledDate),
@@ -139,8 +145,11 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                 ),
                 if (booking.timeSlot != null) ...[
                   const SizedBox(width: 16),
-                  const Icon(Icons.access_time,
-                      size: 16, color: AppColors.textSecondary),
+                  const Icon(
+                    Icons.access_time,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     booking.timeSlot!,
@@ -184,8 +193,11 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.notes,
-                        size: 16, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.notes,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -213,29 +225,34 @@ class _BookingHistoryPageState extends State<BookingHistoryPage> {
 
     switch (status) {
       case BookingStatus.pending:
-        bgColor = AppColors.warning.withOpacity(0.2);
+        bgColor = AppColors.warning.withValues(alpha: 0.2);
         textColor = AppColors.warning;
         text = 'Pending';
         break;
       case BookingStatus.confirmed:
-        bgColor = AppColors.info.withOpacity(0.2);
+        bgColor = AppColors.info.withValues(alpha: 0.2);
         textColor = AppColors.info;
         text = 'Confirmed';
         break;
       case BookingStatus.inProgress:
-        bgColor = AppColors.primary.withOpacity(0.2);
+        bgColor = AppColors.primary.withValues(alpha: 0.2);
         textColor = AppColors.primary;
         text = 'In Progress';
         break;
       case BookingStatus.completed:
-        bgColor = AppColors.success.withOpacity(0.2);
+        bgColor = AppColors.success.withValues(alpha: 0.2);
         textColor = AppColors.success;
         text = 'Completed';
         break;
       case BookingStatus.cancelled:
-        bgColor = AppColors.error.withOpacity(0.2);
+        bgColor = AppColors.error.withValues(alpha: 0.2);
         textColor = AppColors.error;
         text = 'Cancelled';
+        break;
+      case BookingStatus.noShow:
+        bgColor = AppColors.textSecondary.withValues(alpha: 0.2);
+        textColor = AppColors.textSecondary;
+        text = 'No Show';
         break;
     }
 

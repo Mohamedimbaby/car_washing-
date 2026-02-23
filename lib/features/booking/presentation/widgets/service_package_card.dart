@@ -35,7 +35,7 @@ class ServicePackageCard extends StatelessWidget {
         border: Border.all(color: _getPackageColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: _getPackageColor().withOpacity(0.2),
+            color: _getPackageColor().withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -47,7 +47,7 @@ class ServicePackageCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _getPackageColor().withOpacity(0.1),
+              color: _getPackageColor().withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(14),
                 topRight: Radius.circular(14),

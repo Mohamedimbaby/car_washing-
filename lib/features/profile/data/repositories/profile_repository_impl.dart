@@ -43,6 +43,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
           profilePhoto: user.photoURL,
           registrationDate: DateTime.now(),
           appId: _appId,
+          role: 'customer',
+          isEmailVerified: user.emailVerified,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         await _usersCollection.doc(_currentUserId).set(profile.toFirestore());
@@ -77,7 +81,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           (failure) => throw Exception(failure.message),
           (photoUrl) async {
             updateData['profilePhoto'] = photoUrl;
-            
+
             // Update Firebase Auth profile
             await firebaseAuth.currentUser?.updatePhotoURL(photoUrl);
           },
@@ -88,6 +92,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (name != null) {
         await firebaseAuth.currentUser?.updateDisplayName(name);
       }
+
+      updateData['updatedAt'] = FieldValue.serverTimestamp();
 
       await _usersCollection.doc(_currentUserId).update(updateData);
 

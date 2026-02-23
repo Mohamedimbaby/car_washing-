@@ -296,7 +296,7 @@ class _AddCarPageState extends State<AddCarPage> {
             decoration: BoxDecoration(
               color: AppColors.background,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
             ),
             child: _imageFile != null
                 ? Stack(
@@ -330,7 +330,7 @@ class _AddCarPageState extends State<AddCarPage> {
                       Icon(
                         Icons.add_photo_alternate,
                         size: 64,
-                        color: AppColors.textSecondary.withOpacity(0.5),
+                        color: AppColors.textSecondary.withValues(alpha: 0.5),
                       ),
                       const SizedBox(height: 16),
                       const Text(

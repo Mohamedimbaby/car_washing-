@@ -7,12 +7,10 @@ class FirebaseService {
 
   // Collection references
   static CollectionReference get users => firestore.collection('users');
-  static CollectionReference get vehicles => firestore.collection('vehicles');
   static CollectionReference get centers => firestore.collection('centers');
   static CollectionReference get bookings => firestore.collection('bookings');
   static CollectionReference get reviews => firestore.collection('reviews');
   static CollectionReference get staff => firestore.collection('staff');
-  static CollectionReference get tenants => firestore.collection('tenants');
 
   // Get current user ID
   static String? get currentUserId => auth.currentUser?.uid;

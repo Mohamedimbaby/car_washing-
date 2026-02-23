@@ -5,7 +5,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/booking_entity.dart';
 import '../../domain/entities/service_package_entity.dart';
-import '../../../slots/domain/entities/slot_entity.dart';
+
 import '../cubit/booking_cubit.dart';
 import '../../../auth/presentation/widgets/primary_button.dart';
 import 'package:intl/intl.dart';
@@ -61,9 +61,9 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
         final slotsData = slotDoc.data()?['slots'] as List<dynamic>? ?? [];
         final slots = slotsData.map((slot) {
           return TimeSlotItem(
-            time: slot['time'] ?? '',
-            capacity: slot['capacity'] ?? 0,
-            booked: slot['booked'] ?? 0,
+            time: slot['time'] as String? ?? '',
+            capacity: (slot['capacity'] as num?)?.toInt() ?? 0,
+            booked: (slot['booked'] as num?)?.toInt() ?? 0,
           );
         }).toList();
 
@@ -135,12 +135,12 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
                         padding: const EdgeInsets.all(16),
                         children: [
                           Card(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             child: Padding(
                               padding: const EdgeInsets.all(12),
                               child: Row(
                                 children: [
-                                  Icon(Icons.info_outline,
+                                  const Icon(Icons.info_outline,
                                       color: AppColors.primary),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -215,8 +215,7 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
                     context: context,
                     initialDate: selectedDate,
                     firstDate: DateTime.now(),
-                    lastDate:
-                        DateTime.now().add(const Duration(days: 30)),
+                    lastDate: DateTime.now().add(const Duration(days: 30)),
                   );
                   if (picked != null) {
                     setState(() {
@@ -268,7 +267,8 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
     final timeParts = slot.time.split(':');
     final startHour = int.parse(timeParts[0]);
     final startMinute = int.parse(timeParts[1]);
-    final endMinutes = startHour * 60 + startMinute + widget.package.durationMinutes;
+    final endMinutes =
+        startHour * 60 + startMinute + widget.package.durationMinutes;
     final endHour = endMinutes ~/ 60;
     final endMinute = endMinutes % 60;
     final endTime =
@@ -284,20 +284,18 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
         width: MediaQuery.of(context).size.width * 0.42,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary
-              : AppColors.white,
+          color: isSelected ? AppColors.primary : AppColors.white,
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
-                : AppColors.textSecondary.withOpacity(0.3),
+                : AppColors.textSecondary.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -320,9 +318,7 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isSelected
-                        ? AppColors.white
-                        : AppColors.textPrimary,
+                    color: isSelected ? AppColors.white : AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -333,7 +329,7 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
               style: TextStyle(
                 fontSize: 11,
                 color: isSelected
-                    ? AppColors.white.withOpacity(0.8)
+                    ? AppColors.white.withValues(alpha: 0.8)
                     : AppColors.textSecondary,
               ),
             ),
@@ -342,9 +338,9 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.white.withOpacity(0.2)
+                    ? AppColors.white.withValues(alpha: 0.2)
                     : _getCapacityColor(availableSpots, slot.capacity)
-                        .withOpacity(0.1),
+                        .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(
@@ -397,14 +393,14 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
-        child:             PrimaryButton(
+        child: PrimaryButton(
           text: 'Confirm Booking',
           onPressed: selectedTimeSlot != null ? () => _confirmBooking() : () {},
         ),
@@ -415,6 +411,7 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
   void _confirmBooking() {
     context.read<BookingCubit>().createBooking(
           vehicleId: widget.vehicleId,
+          providerId: widget.centerId,
           centerId: widget.centerId,
           serviceType: widget.serviceType,
           packageId: widget.package.id,
@@ -430,4 +427,16 @@ class _TimeSlotSelectionPageState extends State<TimeSlotSelectionPage> {
       (route) => route.settings.name == '/home',
     );
   }
+}
+
+class TimeSlotItem {
+  final String time;
+  final int capacity;
+  final int booked;
+
+  TimeSlotItem({
+    required this.time,
+    required this.capacity,
+    required this.booked,
+  });
 }

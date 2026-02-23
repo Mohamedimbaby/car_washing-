@@ -22,7 +22,7 @@ class CenterInfoSection extends StatelessWidget {
               const Icon(Icons.star, color: Colors.amber, size: 24),
               const SizedBox(width: 8),
               Text(
-                '${center.rating.toStringAsFixed(1)}',
+                center.rating.toStringAsFixed(1),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

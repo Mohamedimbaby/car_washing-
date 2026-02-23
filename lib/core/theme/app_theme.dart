@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_colors.dart';
+import 'app_button_styles.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -8,12 +10,20 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         brightness: Brightness.light,
+        primary: AppColors.primary,
+        secondary: AppColors.cyan,
+        surface: AppColors.cardBackground,
       ),
       fontFamily: 'Poppins',
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+        ),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         titleTextStyle: TextStyle(
           color: AppColors.textPrimary,
@@ -22,48 +32,37 @@ class AppTheme {
           fontFamily: 'Poppins',
         ),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+      cardTheme: CardThemeData(
+        color: AppColors.cardBackground,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+        shadowColor: AppColors.navy.withValues(alpha: 0.08),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.inputBackground,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+      elevatedButtonTheme: AppButtonStyles.elevatedButton,
+      inputDecorationTheme: AppButtonStyles.inputDecoration,
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.white,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textHint,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.divider,
+        thickness: 1,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surfaceLight,
+        selectedColor: AppColors.primary,
+        labelStyle: const TextStyle(fontSize: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
-        ),
-        contentPadding: const EdgeInsets.all(16),
       ),
     );
   }
 
-  static ThemeData get darkTheme {
-    return lightTheme.copyWith(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF121212),
-    );
-  }
+  static ThemeData get darkTheme => lightTheme;
 }

@@ -13,9 +13,6 @@ import 'core/localization/locale_provider.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/booking/presentation/cubit/booking_cubit.dart';
 import 'features/cars/presentation/cubit/car_cubit.dart';
-import 'features/provider/presentation/cubit/provider_cubit.dart';
-import 'features/packages/presentation/cubit/package_cubit.dart';
-import 'features/slots/presentation/cubit/slot_cubit.dart';
 import 'features/profile/presentation/cubit/profile_cubit.dart';
 
 // Background message handler
@@ -27,12 +24,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   // Initialize FCM background handler
- // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await configureDependencies();
-  
+
   runApp(const CarWashApp());
 }
 
@@ -62,9 +59,6 @@ class _CarWashAppState extends State<CarWashApp> {
         BlocProvider(create: (_) => getIt<AuthCubit>()..checkAuthStatus()),
         BlocProvider(create: (_) => getIt<BookingCubit>()),
         BlocProvider(create: (_) => getIt<CarCubit>()),
-        BlocProvider(create: (_) => getIt<ProviderCubit>()),
-        BlocProvider(create: (_) => getIt<PackageCubit>()),
-        BlocProvider(create: (_) => getIt<SlotCubit>()),
         BlocProvider(create: (_) => getIt<ProfileCubit>()),
       ],
       child: AnimatedBuilder(

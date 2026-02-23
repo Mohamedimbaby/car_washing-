@@ -33,6 +33,7 @@ class BookingCubit extends Cubit<BookingState> {
 
   Future<void> createBooking({
     required String vehicleId,
+    required String providerId,
     required String centerId,
     String? branchId,
     required ServiceType serviceType,
@@ -46,6 +47,7 @@ class BookingCubit extends Cubit<BookingState> {
     emit(BookingLoading());
     final result = await createBookingUseCase(
       vehicleId: vehicleId,
+      providerId: providerId,
       centerId: centerId,
       branchId: branchId,
       serviceType: serviceType,
@@ -85,10 +87,7 @@ class BookingCubit extends Cubit<BookingState> {
     required DateTime date,
   }) async {
     emit(BookingLoading());
-    final result = await getTimeSlotsUseCase(
-      centerId: centerId,
-      date: date,
-    );
+    final result = await getTimeSlotsUseCase(centerId: centerId, date: date);
     result.fold(
       (failure) => emit(BookingError(failure.message)),
       (timeSlots) => emit(TimeSlotsLoaded(timeSlots)),

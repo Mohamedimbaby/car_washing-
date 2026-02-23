@@ -22,14 +22,14 @@ class GuestModeBanner extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.primary.withOpacity(0.8),
-                AppColors.primaryLight.withOpacity(0.8),
+                AppColors.primary.withValues(alpha: 0.8),
+                AppColors.primaryLight.withValues(alpha: 0.8),
               ],
             ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -57,7 +57,7 @@ class GuestModeBanner extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Sign in to save vehicles & bookings',
+                      'Sign in to save cars & bookings',
                       style: TextStyle(
                         color: AppColors.white,
                         fontSize: 12,
@@ -70,8 +70,7 @@ class GuestModeBanner extends StatelessWidget {
                 onPressed: () async {
                   await context.read<AuthCubit>().logout();
                   if (context.mounted) {
-                    Navigator.of(context)
-                        .pushReplacementNamed(AppRouter.login);
+                    Navigator.of(context).pushReplacementNamed(AppRouter.login);
                   }
                 },
                 style: TextButton.styleFrom(

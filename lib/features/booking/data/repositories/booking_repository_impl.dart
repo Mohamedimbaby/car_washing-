@@ -17,39 +17,40 @@ class BookingRepositoryImpl implements BookingRepository {
   final FirebaseFirestore firestore;
   final FirebaseAuth firebaseAuth;
 
-  BookingRepositoryImpl({
-    required this.firestore,
-    required this.firebaseAuth,
-  });
+  BookingRepositoryImpl({required this.firestore, required this.firebaseAuth});
 
   String get _currentUserId => firebaseAuth.currentUser?.uid ?? 'guest';
   String get _appId => AppConfig.appId;
+
+  CollectionReference get _bookingsCollection =>
+      firestore.collection(AppConfig.collectionPath('bookings'));
+  CollectionReference get _packagesCollection =>
+      firestore.collection(AppConfig.collectionPath('packages'));
+  CollectionReference get _addonsCollection =>
+      firestore.collection(AppConfig.collectionPath('addons'));
+  CollectionReference get _slotsCollection =>
+      firestore.collection(AppConfig.collectionPath('slots'));
 
   @override
   ResultFuture<List<ServicePackageEntity>> getServicePackages(
     ServiceType serviceType,
   ) async {
     try {
-      // Fetch from Firebase filtered by app_id and service type
-      final snapshot = await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('servicePackages')
-          .where('serviceType', isEqualTo: serviceType.toString().split('.').last)
+      final snapshot = await _packagesCollection
           .where('isActive', isEqualTo: true)
           .orderBy('price')
           .get();
-
-
-
 
       final packages = snapshot.docs
           .map((doc) => ServicePackageModel.fromFirestore(doc))
           .toList();
 
+      if (packages.isEmpty) {
+        return Right(_getMockPackages(serviceType));
+      }
+
       return Right(packages);
     } catch (e) {
-      // If Firebase fetch fails, use mock data
       return Right(_getMockPackages(serviceType));
     }
   }
@@ -57,11 +58,7 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   ResultFuture<List<AddonEntity>> getAddons() async {
     try {
-      // Fetch from Firebase filtered by app_id
-      final snapshot = await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('addons')
+      final snapshot = await _addonsCollection
           .where('isActive', isEqualTo: true)
           .orderBy('price')
           .get();
@@ -86,16 +83,56 @@ class BookingRepositoryImpl implements BookingRepository {
     required DateTime date,
   }) async {
     try {
-      final slots = _getMockTimeSlots();
-      return Right(slots);
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      final snapshot = await _slotsCollection
+          .where('providerId', isEqualTo: centerId)
+          .where('date', isEqualTo: Timestamp.fromDate(dateOnly))
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        return Right(_getMockTimeSlots());
+      }
+
+      final slotDoc = snapshot.docs.first;
+      final slotsArray =
+          (slotDoc.data() as Map<String, dynamic>)['slots'] as List<dynamic>? ??
+          [];
+
+      final timeSlots = slotsArray.map((slot) {
+        final time = slot['time'] as String? ?? '00:00';
+        final capacity = slot['capacity'] as int? ?? 0;
+        final booked = slot['booked'] as int? ?? 0;
+        final available = capacity - booked;
+
+        // Calculate end time (30 min later)
+        final timeParts = time.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final endMinute = minute + 30;
+        final endHour = hour + (endMinute >= 60 ? 1 : 0);
+        final endTime =
+            '${endHour.toString().padLeft(2, '0')}:${(endMinute % 60).toString().padLeft(2, '0')}';
+
+        return TimeSlotEntity(
+          id: '${slotDoc.id}_$time',
+          startTime: time,
+          endTime: endTime,
+          isAvailable: available > 0,
+          availableSlots: available,
+        );
+      }).toList();
+
+      return Right(timeSlots);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Right(_getMockTimeSlots());
     }
   }
 
   @override
   ResultFuture<BookingEntity> createBooking({
     required String vehicleId,
+    required String providerId,
     required String centerId,
     String? branchId,
     required ServiceType serviceType,
@@ -109,35 +146,32 @@ class BookingRepositoryImpl implements BookingRepository {
     try {
       // Get package duration to calculate required slots
       final packageDuration = await _getPackageDuration(packageId);
-      
+
       // Check and book consecutive slots if timeSlot is provided
-      if (timeSlot != null && centerId.isNotEmpty) {
+      if (timeSlot != null && providerId.isNotEmpty) {
         final slotsBooked = await _bookConsecutiveSlots(
-          providerId: centerId,
+          providerId: providerId,
           date: scheduledDate,
           startTime: timeSlot,
           durationMinutes: packageDuration,
         );
-        
+
         if (!slotsBooked) {
-          return const Left(ServerFailure(
-            'Not enough consecutive slots available for this service',
-          ));
+          return const Left(
+            ServerFailure(
+              'Not enough consecutive slots available for this service',
+            ),
+          );
         }
       }
-      
-      // Store booking under tenant's bookings collection
-      final docRef = firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('bookings')
-          .doc();
-      
+
+      final docRef = _bookingsCollection.doc();
       final totalPrice = await _calculateTotalPrice(packageId, addonIds);
-      
+
       final bookingData = {
         'appId': _appId,
         'userId': _currentUserId,
+        'providerId': providerId,
         'vehicleId': vehicleId,
         'centerId': centerId,
         'branchId': branchId,
@@ -148,9 +182,11 @@ class BookingRepositoryImpl implements BookingRepository {
         'timeSlot': timeSlot,
         'status': 'pending',
         'totalPrice': totalPrice,
+        'currency': 'EGP',
         'specialInstructions': specialInstructions,
         'location': location,
         'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       };
 
       await docRef.set(bookingData);
@@ -158,6 +194,7 @@ class BookingRepositoryImpl implements BookingRepository {
       final booking = BookingEntity(
         id: docRef.id,
         userId: _currentUserId,
+        providerId: providerId,
         vehicleId: vehicleId,
         centerId: centerId,
         branchId: branchId,
@@ -168,6 +205,7 @@ class BookingRepositoryImpl implements BookingRepository {
         timeSlot: timeSlot,
         status: BookingStatus.pending,
         totalPrice: totalPrice,
+        currency: 'EGP',
         specialInstructions: specialInstructions,
         location: location,
         createdAt: DateTime.now(),
@@ -182,10 +220,7 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   ResultFuture<List<BookingEntity>> getBookings() async {
     try {
-      final snapshot = await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('bookings')
+      final snapshot = await _bookingsCollection
           .where('userId', isEqualTo: _currentUserId)
           .orderBy('createdAt', descending: true)
           .get();
@@ -203,13 +238,8 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   ResultFuture<BookingEntity> getBookingById(String id) async {
     try {
-      final doc = await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('bookings')
-          .doc(id)
-          .get();
-      
+      final doc = await _bookingsCollection.doc(id).get();
+
       if (!doc.exists) {
         return const Left(ServerFailure('Booking not found'));
       }
@@ -224,14 +254,10 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   ResultVoid cancelBooking(String id) async {
     try {
-      await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('bookings')
-          .doc(id)
-          .update({
+      await _bookingsCollection.doc(id).update({
         'status': 'cancelled',
         'cancelledAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       });
       return const Right(null);
     } catch (e) {
@@ -239,30 +265,24 @@ class BookingRepositoryImpl implements BookingRepository {
     }
   }
 
-  // Helper methods for slot booking
+  // --- Helper methods ---
+
   Future<int> _getPackageDuration(String packageId) async {
     try {
-      final packageDoc = await firestore
-          .collection(AppConfig.collectionPath('packages'))
-          .doc(packageId)
-          .get();
-      
+      final packageDoc = await _packagesCollection.doc(packageId).get();
+
       if (packageDoc.exists) {
-        final durationStr = packageDoc.data()?['duration'] as String?;
-        if (durationStr != null) {
-          final parts = durationStr.split(' ');
+        final data = packageDoc.data() as Map<String, dynamic>?;
+        final duration = data?['duration'];
+        if (duration is int) return duration;
+        if (duration is String) {
+          final parts = duration.split(' ');
           if (parts.isNotEmpty) {
             return int.tryParse(parts[0]) ?? 30;
           }
         }
       }
-      
-      // Fallback to mock data
-      if (packageId == 'basic') return 20;
-      if (packageId == 'standard') return 40;
-      if (packageId == 'premium') return 60;
-      if (packageId == 'detailing') return 120;
-      
+
       return 30; // Default 30 minutes
     } catch (e) {
       return 30;
@@ -276,51 +296,48 @@ class BookingRepositoryImpl implements BookingRepository {
     required int durationMinutes,
   }) async {
     try {
-      // Calculate number of 30-minute slots needed (updated from 15-minute)
       final slotsNeeded = (durationMinutes / 30).ceil();
-      
-      // Parse start time
+
       final timeParts = startTime.split(':');
       if (timeParts.length != 2) return false;
-      
+
       int currentHour = int.parse(timeParts[0]);
       int currentMinute = int.parse(timeParts[1]);
-      
-      // Generate list of consecutive slot times needed (30-minute intervals)
+
       final List<String> requiredSlotTimes = [];
       for (int i = 0; i < slotsNeeded; i++) {
         requiredSlotTimes.add(
           '${currentHour.toString().padLeft(2, '0')}:${currentMinute.toString().padLeft(2, '0')}',
         );
-        
+
         currentMinute += 30;
         if (currentMinute >= 60) {
           currentMinute = 0;
           currentHour++;
         }
       }
-      
-      // Use Firestore transaction to ensure atomic booking
+
+      final dateOnly = DateTime(date.year, date.month, date.day);
+
       return await firestore.runTransaction((transaction) async {
-        // Get the slot document for this provider and date
-        final slotId = '${providerId}_${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
-        final slotDocRef = firestore
-            .collection(AppConfig.collectionPath('slots'))
-            .doc(slotId);
-        
-        final slotDoc = await transaction.get(slotDocRef);
-        
-        if (!slotDoc.exists) {
-          throw Exception('Slot document not found');
+        final querySnapshot = await _slotsCollection
+            .where('providerId', isEqualTo: providerId)
+            .where('appId', isEqualTo: _appId)
+            .where('date', isEqualTo: Timestamp.fromDate(dateOnly))
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isEmpty) {
+          return false;
         }
-        
+
+        final slotDoc = querySnapshot.docs.first;
         final slotData = slotDoc.data() as Map<String, dynamic>;
         final slotsArray = slotData['slots'] as List<dynamic>;
-        
-        // Check if all required slots have available capacity
+
         bool allAvailable = true;
         final List<int> slotIndices = [];
-        
+
         for (final requiredTime in requiredSlotTimes) {
           int slotIndex = -1;
           for (int i = 0; i < slotsArray.length; i++) {
@@ -329,39 +346,34 @@ class BookingRepositoryImpl implements BookingRepository {
               slotIndex = i;
               final booked = slot['booked'] as int? ?? 0;
               final capacity = slot['capacity'] as int? ?? 0;
-              
+
               if (booked >= capacity) {
                 allAvailable = false;
-                break;
               }
               break;
             }
           }
-          
+
           if (slotIndex == -1) {
             allAvailable = false;
             break;
           }
-          
+
           slotIndices.add(slotIndex);
         }
-        
-        if (!allAvailable) {
-          return false;
-        }
-        
-        // Book all slots by incrementing booked count
+
+        if (!allAvailable) return false;
+
         for (final index in slotIndices) {
-          slotsArray[index]['booked'] = (slotsArray[index]['booked'] as int? ?? 0) + 1;
+          slotsArray[index]['booked'] =
+              (slotsArray[index]['booked'] as int? ?? 0) + 1;
         }
-        
-        // Update the document
-        transaction.update(slotDocRef, {'slots': slotsArray});
-        
+
+        transaction.update(slotDoc.reference, {'slots': slotsArray});
+
         return true;
       });
     } catch (e) {
-      print('Error booking consecutive slots: $e');
       return false;
     }
   }
@@ -372,62 +384,49 @@ class BookingRepositoryImpl implements BookingRepository {
   ) async {
     try {
       double total = 0;
-      
-      // Get package price from Firebase
-      final packageDoc = await firestore
-          .collection('tenants')
-          .doc(_appId)
-          .collection('servicePackages')
-          .doc(packageId)
-          .get();
-      
+
+      final packageDoc = await _packagesCollection.doc(packageId).get();
+
       if (packageDoc.exists) {
-        total += (packageDoc.data()?['price'] as num).toDouble();
+        total +=
+            ((packageDoc.data() as Map<String, dynamic>?)?['price'] as num?)
+                ?.toDouble() ??
+            0;
       }
-      
-      // Get addon prices from Firebase
+
       if (addonIds.isNotEmpty) {
-        final addonsSnapshot = await firestore
-            .collection('tenants')
-            .doc(_appId)
-            .collection('addons')
+        final addonsSnapshot = await _addonsCollection
             .where(FieldPath.documentId, whereIn: addonIds)
             .get();
-        
+
         for (var doc in addonsSnapshot.docs) {
-          total += (doc.data()['price'] as num).toDouble();
+          total +=
+              ((doc.data() as Map<String, dynamic>)['price'] as num?)
+                  ?.toDouble() ??
+              0;
         }
       }
-      
+
       return total;
     } catch (e) {
-      // Fallback to mock calculation
-      double total = 0;
-      if (packageId == 'basic') total += 25;
-      if (packageId == 'standard') total += 45;
-      if (packageId == 'premium') total += 75;
-      if (packageId == 'detailing') total += 150;
-      total += addonIds.length * 10;
-      return total;
+      return 0;
     }
   }
 
+  // --- Mock data fallbacks (kept for offline/demo) ---
+
   List<ServicePackageEntity> _getMockPackages(ServiceType serviceType) {
     return [
-      ServicePackageEntity(
+      const ServicePackageEntity(
         id: 'basic',
         name: 'Basic Wash',
         description: 'Exterior wash and dry',
         price: 25.0,
         type: PackageType.basic,
         durationMinutes: 20,
-        features: [
-          'Exterior hand wash',
-          'Tire cleaning',
-          'Hand dry',
-        ],
+        features: ['Exterior hand wash', 'Tire cleaning', 'Hand dry'],
       ),
-      ServicePackageEntity(
+      const ServicePackageEntity(
         id: 'standard',
         name: 'Standard Wash',
         description: 'Exterior wash, wheels, and interior vacuum',
@@ -441,7 +440,7 @@ class BookingRepositoryImpl implements BookingRepository {
           'Window cleaning',
         ],
       ),
-      ServicePackageEntity(
+      const ServicePackageEntity(
         id: 'premium',
         name: 'Premium Wash',
         description: 'Complete wash and interior cleaning',
@@ -456,7 +455,7 @@ class BookingRepositoryImpl implements BookingRepository {
           'Tire shine',
         ],
       ),
-      ServicePackageEntity(
+      const ServicePackageEntity(
         id: 'detailing',
         name: 'Full Detailing',
         description: 'Complete professional detailing service',
@@ -479,20 +478,32 @@ class BookingRepositoryImpl implements BookingRepository {
     return [
       const AddonEntity(
         id: 'wax',
+        providerId: 'mock',
+        appId: 'mock',
         name: 'Wax Protection',
+        nameAr: 'حماية الشمع',
         description: 'Premium wax coating',
+        descriptionAr: 'طبقة شمع ممتازة',
         price: 15.0,
       ),
       const AddonEntity(
         id: 'engine',
+        providerId: 'mock',
+        appId: 'mock',
         name: 'Engine Cleaning',
+        nameAr: 'تنظيف المحرك',
         description: 'Deep engine bay cleaning',
+        descriptionAr: 'تنظيف عميق لغرفة المحرك',
         price: 20.0,
       ),
       const AddonEntity(
         id: 'headlight',
+        providerId: 'mock',
+        appId: 'mock',
         name: 'Headlight Restoration',
+        nameAr: 'تلميع المصابيح',
         description: 'Restore cloudy headlights',
+        descriptionAr: 'استعادة لمعان المصابيح',
         price: 25.0,
       ),
     ];

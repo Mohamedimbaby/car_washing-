@@ -5,7 +5,7 @@ class ServiceTypeCard extends StatelessWidget {
   final String title;
   final String description;
   final IconData icon;
-  final Color color;
+  final List<Color> gradientColors;
   final VoidCallback onTap;
 
   const ServiceTypeCard({
@@ -13,45 +13,41 @@ class ServiceTypeCard extends StatelessWidget {
     required this.title,
     required this.description,
     required this.icon,
-    required this.color,
+    required this.gradientColors,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.8)],
+            colors: gradientColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: gradientColors.first.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppColors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: AppColors.white,
-              ),
+              child: Icon(icon, size: 28, color: AppColors.white),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -61,8 +57,8 @@ class ServiceTypeCard extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.white,
                     ),
                   ),
@@ -70,17 +66,25 @@ class ServiceTypeCard extends StatelessWidget {
                   Text(
                     description,
                     style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.white.withOpacity(0.9),
+                      fontSize: 13,
+                      color: AppColors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: AppColors.white,
-              size: 20,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.white,
+                size: 16,
+              ),
             ),
           ],
         ),

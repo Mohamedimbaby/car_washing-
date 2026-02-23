@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA-IszuTT9b6yF8Tv8AGJPj8MJhmORG-mY',
-    appId: '1:331243296230:android:47af9ff4eab0966dd53227',
+    appId: '1:331243296230:android:794304ae3d48bf63d53227',
     messagingSenderId: '331243296230',
     projectId: 'car-wash-5f1ca',
     storageBucket: 'car-wash-5f1ca.firebasestorage.app',
@@ -66,10 +66,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyANZ1wqwGh5HeoTH4KgXimCestMPFPbxvU',
-    appId: '1:331243296230:ios:338e708b64b9c189d53227',
+    appId: '1:331243296230:ios:6af2c0348af54b3ad53227',
     messagingSenderId: '331243296230',
     projectId: 'car-wash-5f1ca',
     storageBucket: 'car-wash-5f1ca.firebasestorage.app',
-    iosBundleId: 'com.example.washingCar',
+    iosBundleId: 'com.glossy.app',
   );
+
 }

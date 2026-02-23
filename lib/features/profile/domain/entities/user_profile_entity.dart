@@ -9,6 +9,11 @@ class UserProfileEntity extends Equatable {
   final String? address;
   final DateTime registrationDate;
   final String appId;
+  final String role;
+  final bool isEmailVerified;
+  final bool isPhoneVerified;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const UserProfileEntity({
     required this.userId,
@@ -19,6 +24,11 @@ class UserProfileEntity extends Equatable {
     this.address,
     required this.registrationDate,
     required this.appId,
+    required this.role,
+    this.isEmailVerified = false,
+    this.isPhoneVerified = false,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   UserProfileEntity copyWith({
@@ -30,6 +40,11 @@ class UserProfileEntity extends Equatable {
     String? address,
     DateTime? registrationDate,
     String? appId,
+    String? role,
+    bool? isEmailVerified,
+    bool? isPhoneVerified,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return UserProfileEntity(
       userId: userId ?? this.userId,
@@ -40,6 +55,11 @@ class UserProfileEntity extends Equatable {
       address: address ?? this.address,
       registrationDate: registrationDate ?? this.registrationDate,
       appId: appId ?? this.appId,
+      role: role ?? this.role,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -53,5 +73,10 @@ class UserProfileEntity extends Equatable {
         address,
         registrationDate,
         appId,
+        role,
+        isEmailVerified,
+        isPhoneVerified,
+        createdAt,
+        updatedAt,
       ];
 }

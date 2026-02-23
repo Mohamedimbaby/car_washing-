@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.washingCar</string>
+	<string>com.glossy.app</string>
 	<key>PROJECT_ID</key>
 	<string>car-wash-5f1ca</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:331243296230:ios:338e708b64b9c189d53227</string>
+	<string>1:331243296230:ios:6af2c0348af54b3ad53227</string>
 </dict>
 </plist>

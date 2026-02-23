@@ -5,6 +5,7 @@ class BookingModel extends BookingEntity {
   const BookingModel({
     required super.id,
     required super.userId,
+    required super.providerId,
     required super.vehicleId,
     required super.centerId,
     super.branchId,
@@ -15,9 +16,17 @@ class BookingModel extends BookingEntity {
     super.timeSlot,
     required super.status,
     required super.totalPrice,
+    super.currency,
     super.specialInstructions,
     super.location,
+    super.paymentStatus,
+    super.confirmedAt,
+    super.startedAt,
+    super.completedAt,
+    super.cancelledAt,
+    super.cancelReason,
     required super.createdAt,
+    super.updatedAt,
   });
 
   factory BookingModel.fromFirestore(DocumentSnapshot doc) {
@@ -25,6 +34,7 @@ class BookingModel extends BookingEntity {
     return BookingModel(
       id: doc.id,
       userId: data['userId'] ?? '',
+      providerId: data['providerId'] ?? '',
       vehicleId: data['vehicleId'] ?? '',
       centerId: data['centerId'] ?? '',
       branchId: data['branchId'],
@@ -35,17 +45,24 @@ class BookingModel extends BookingEntity {
       timeSlot: data['timeSlot'],
       status: _parseBookingStatus(data['status']),
       totalPrice: (data['totalPrice'] as num).toDouble(),
+      currency: data['currency'] ?? 'EGP',
       specialInstructions: data['specialInstructions'],
       location: data['location'],
-      createdAt: data['createdAt'] != null
-          ? (data['createdAt'] as Timestamp).toDate()
-          : null,
+      paymentStatus: data['paymentStatus'],
+      confirmedAt: _parseTimestamp(data['confirmedAt']),
+      startedAt: _parseTimestamp(data['startedAt']),
+      completedAt: _parseTimestamp(data['completedAt']),
+      cancelledAt: _parseTimestamp(data['cancelledAt']),
+      cancelReason: data['cancelReason'],
+      createdAt: _parseTimestamp(data['createdAt']),
+      updatedAt: _parseTimestamp(data['updatedAt']),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
+      'providerId': providerId,
       'vehicleId': vehicleId,
       'centerId': centerId,
       'branchId': branchId,
@@ -56,10 +73,30 @@ class BookingModel extends BookingEntity {
       'timeSlot': timeSlot,
       'status': status.toString().split('.').last,
       'totalPrice': totalPrice,
+      'currency': currency,
       'specialInstructions': specialInstructions,
       'location': location,
-      'createdAt':createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'paymentStatus': paymentStatus,
+      'confirmedAt': confirmedAt != null
+          ? Timestamp.fromDate(confirmedAt!)
+          : null,
+      'startedAt': startedAt != null ? Timestamp.fromDate(startedAt!) : null,
+      'completedAt': completedAt != null
+          ? Timestamp.fromDate(completedAt!)
+          : null,
+      'cancelledAt': cancelledAt != null
+          ? Timestamp.fromDate(cancelledAt!)
+          : null,
+      'cancelReason': cancelReason,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
     };
+  }
+
+  static DateTime? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   static ServiceType _parseServiceType(String? type) {
@@ -85,6 +122,8 @@ class BookingModel extends BookingEntity {
         return BookingStatus.completed;
       case 'cancelled':
         return BookingStatus.cancelled;
+      case 'noShow':
+        return BookingStatus.noShow;
       default:
         return BookingStatus.pending;
     }

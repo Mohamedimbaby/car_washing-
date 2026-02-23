@@ -61,7 +61,8 @@ service cloud.firestore {
       // Addons
       match /addons/{addonId} {
         allow read: if isSignedIn();
-        allow write: if false; // Admin only
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn() && resource.data.providerId == request.auth.uid;
       }
       
       // ⭐ SLOTS COLLECTION - THIS IS CRITICAL FOR SLOT GENERATION ⭐
@@ -95,12 +96,15 @@ service cloud.firestore {
         );
         allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
       }
+      
+      // Reviews collection
+      match /reviews/{reviewId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      }
     }
     
-    // Global service types (not app-specific)
-    match /serviceTypes/{typeId} {
-      allow read: if true;
-      allow write: if false; // Admin only
-    }
+    // Global collections can be added here if needed
   }
 }

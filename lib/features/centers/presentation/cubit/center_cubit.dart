@@ -54,7 +54,7 @@ class CenterCubit extends Cubit<CenterState> {
     final result = await getCenterByIdUseCase(id);
     result.fold(
       (failure) => emit(CenterError(failure.message)),
-      (center) => emit(CenterDetailsLoaded(center, [])),
+      (center) => emit(CenterDetailsLoaded(center, const [])),
     );
   }
 }

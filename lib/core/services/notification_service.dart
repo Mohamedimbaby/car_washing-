@@ -29,12 +29,15 @@ class NotificationService {
     }
 
     // Initialize local notifications
-    // Note: Update flutter_local_notifications API if needed
-    // const initSettings = InitializationSettings(
-    //   android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-    //   iOS: DarwinInitializationSettings(),
-    // );
-    // await _localNotifications.initialize(initSettings);
+    const initSettings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/launcher_icon'),
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      ),
+    );
+    await _localNotifications.initialize(settings: initSettings);
 
     // Get FCM token
     final token = await _fcm.getToken();
@@ -91,7 +94,7 @@ class NotificationService {
 
   void _handleBackgroundMessage(RemoteMessage message) {
     final data = message.data;
-    
+
     // Handle notification tap - navigate based on data
     if (data['type'] == 'booking_status_change') {
       // Navigate to booking details or history
@@ -104,30 +107,29 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    // Note: Update flutter_local_notifications API if needed
-    // const androidDetails = AndroidNotificationDetails(
-    //   'washing_car_channel',
-    //   'Washing Car Notifications',
-    //   channelDescription: 'Notifications for booking updates',
-    //   importance: Importance.high,
-    //   priority: Priority.high,
-    //   showWhen: true,
-    // );
-    // const iosDetails = DarwinNotificationDetails(
-    //   presentAlert: true,
-    //   presentBadge: true,
-    //   presentSound: true,
-    // );
-    // const details = NotificationDetails(
-    //   android: androidDetails,
-    //   iOS: iosDetails,
-    // );
-    // await _localNotifications.show(
-    //   DateTime.now().millisecondsSinceEpoch ~/ 1000,
-    //   title,
-    //   body,
-    //   details,
-    // );
+    const androidDetails = AndroidNotificationDetails(
+      'washy_alerts_channel',
+      'Washy Booking Alerts',
+      channelDescription: 'Notifications for upcoming wash bookings',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+    await _localNotifications.show(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      notificationDetails: details,
+    );
   }
 
   Future<void> deleteToken() async {

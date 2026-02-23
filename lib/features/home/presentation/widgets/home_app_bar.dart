@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/cubit/auth_state.dart';
 
 class HomeAppBar extends StatelessWidget {
   const HomeAppBar({super.key});
@@ -10,89 +7,70 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: AppColors.white,
-      child: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          String userName = 'Guest';
-          bool isGuest = false;
-          
-          if (state is Authenticated) {
-            userName = state.user.fullName ?? 'User';
-          } else if (state is GuestMode) {
-            userName = 'Guest';
-            isGuest = true;
-          }
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: const BoxDecoration(
+        color: AppColors.navyDark,
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/icons/app_icon.png',
+            width: 32,
+            height: 32,
+            errorBuilder: (_, __, ___) => const Icon(
+              Icons.local_car_wash,
+              color: AppColors.cyan,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'Washy',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppColors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const Spacer(),
+          _LocationChip(),
+        ],
+      ),
+    );
+  }
+}
 
-          return Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  userName[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isGuest ? 'Browse as Guest' : 'Welcome back,',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        if (isGuest) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'GUEST',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.warning,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () {},
-              ),
-            ],
-          );
-        },
+class _LocationChip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.white.withValues(alpha: 0.15),
+        ),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.location_on_rounded,
+              size: 14, color: AppColors.cyan),
+          SizedBox(width: 4),
+          Text(
+            'Cairo, EG',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.white,
+            ),
+          ),
+          SizedBox(width: 2),
+          Icon(Icons.keyboard_arrow_down_rounded,
+              size: 14, color: AppColors.white),
+        ],
       ),
     );
   }

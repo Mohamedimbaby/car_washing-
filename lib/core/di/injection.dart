@@ -25,32 +25,7 @@ import '../../features/cars/domain/usecases/add_car_usecase.dart';
 import '../../features/cars/domain/usecases/update_car_usecase.dart';
 import '../../features/cars/domain/usecases/delete_car_usecase.dart';
 import '../../features/cars/presentation/cubit/car_cubit.dart';
-import '../../features/provider/data/repositories/provider_repository_impl.dart';
-import '../../features/provider/domain/repositories/provider_repository.dart';
-import '../../features/provider/presentation/cubit/provider_cubit.dart';
-import '../../features/packages/data/repositories/package_repository_impl.dart';
-import '../../features/packages/domain/repositories/package_repository.dart';
-import '../../features/packages/domain/usecases/get_packages_usecase.dart';
-import '../../features/packages/domain/usecases/add_package_usecase.dart';
-import '../../features/packages/domain/usecases/update_package_usecase.dart';
-import '../../features/packages/domain/usecases/delete_package_usecase.dart';
-import '../../features/packages/domain/usecases/toggle_package_status_usecase.dart';
-import '../../features/packages/presentation/cubit/package_cubit.dart';
-import '../../features/slots/data/repositories/slot_repository_impl.dart';
-import '../../features/slots/data/repositories/schedule_repository_impl.dart';
-import '../../features/slots/domain/repositories/slot_repository.dart';
-import '../../features/slots/domain/repositories/schedule_repository.dart';
-import '../../features/slots/domain/usecases/get_slots_usecase.dart';
-import '../../features/slots/domain/usecases/add_slot_usecase.dart';
-import '../../features/slots/domain/usecases/update_slot_usecase.dart';
-import '../../features/slots/domain/usecases/delete_slot_usecase.dart';
-import '../../features/slots/domain/usecases/add_bulk_slots_usecase.dart';
-import '../../features/slots/domain/usecases/get_schedule_config_usecase.dart';
-import '../../features/slots/domain/usecases/save_schedule_config_usecase.dart';
-import '../../features/slots/domain/usecases/generate_monthly_slots_usecase.dart';
-import '../../features/slots/domain/usecases/delete_schedule_config_usecase.dart';
-import '../../features/slots/presentation/cubit/slot_cubit.dart';
-import '../../features/slots/presentation/cubit/schedule_cubit.dart';
+
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_user_profile_usecase.dart';
@@ -64,7 +39,7 @@ Future<void> configureDependencies() async {
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
-  
+
   // Firebase
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   getIt.registerLazySingleton<FirebaseFirestore>(
@@ -73,7 +48,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirebaseStorage>(
     () => FirebaseStorage.instance,
   );
-  
+
   // Auth Feature
   getIt.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(
@@ -91,11 +66,11 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => RegisterUseCase(getIt()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
   getIt.registerLazySingleton(() => AuthCubit(
-    loginUseCase: getIt(),
-    registerUseCase: getIt(),
-    logoutUseCase: getIt(),
-    authRepository: getIt(),
-  ));
+        loginUseCase: getIt(),
+        registerUseCase: getIt(),
+        logoutUseCase: getIt(),
+        authRepository: getIt(),
+      ));
 
   // Booking Feature
   getIt.registerLazySingleton<BookingRepository>(
@@ -110,13 +85,13 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => GetAddonsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetTimeSlotsUseCase(getIt()));
   getIt.registerFactory(() => BookingCubit(
-    getServicePackagesUseCase: getIt(),
-    createBookingUseCase: getIt(),
-    getBookingsUseCase: getIt(),
-    getAddonsUseCase: getIt(),
-    getTimeSlotsUseCase: getIt(),
-  ));
-  
+        getServicePackagesUseCase: getIt(),
+        createBookingUseCase: getIt(),
+        getBookingsUseCase: getIt(),
+        getAddonsUseCase: getIt(),
+        getTimeSlotsUseCase: getIt(),
+      ));
+
   // Cars Feature
   getIt.registerLazySingleton<CarRepository>(
     () => CarRepositoryImpl(
@@ -130,78 +105,12 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => UpdateCarUseCase(getIt()));
   getIt.registerLazySingleton(() => DeleteCarUseCase(getIt()));
   getIt.registerFactory(() => CarCubit(
-    getCarsUseCase: getIt(),
-    addCarUseCase: getIt(),
-    updateCarUseCase: getIt(),
-    deleteCarUseCase: getIt(),
-  ));
-  
-  // Provider Feature
-  getIt.registerLazySingleton<ProviderRepository>(
-    () => ProviderRepositoryImpl(
-      firestore: getIt(),
-      firebaseAuth: getIt(),
-    ),
-  );
-  getIt.registerFactory(() => ProviderCubit(repository: getIt()));
-  
-  // Package Feature
-  getIt.registerLazySingleton<PackageRepository>(
-    () => PackageRepositoryImpl(
-      firestore: getIt(),
-      firebaseAuth: getIt(),
-      storage: getIt(),
-    ),
-  );
-  getIt.registerLazySingleton(() => GetPackagesUseCase(getIt()));
-  getIt.registerLazySingleton(() => AddPackageUseCase(getIt()));
-  getIt.registerLazySingleton(() => UpdatePackageUseCase(getIt()));
-  getIt.registerLazySingleton(() => DeletePackageUseCase(getIt()));
-  getIt.registerLazySingleton(() => TogglePackageStatusUseCase(getIt()));
-  getIt.registerFactory(() => PackageCubit(
-    getPackagesUseCase: getIt(),
-    addPackageUseCase: getIt(),
-    updatePackageUseCase: getIt(),
-    deletePackageUseCase: getIt(),
-    togglePackageStatusUseCase: getIt(),
-  ));
-  
-  // Slot Feature
-  getIt.registerLazySingleton<SlotRepository>(
-    () => SlotRepositoryImpl(
-      firestore: getIt(),
-      firebaseAuth: getIt(),
-    ),
-  );
-  getIt.registerLazySingleton<ScheduleRepository>(
-    () => ScheduleRepositoryImpl(
-      firestore: getIt(),
-      firebaseAuth: getIt(),
-    ),
-  );
-  getIt.registerLazySingleton(() => GetSlotsUseCase(getIt()));
-  getIt.registerLazySingleton(() => AddSlotUseCase(getIt()));
-  getIt.registerLazySingleton(() => UpdateSlotUseCase(getIt()));
-  getIt.registerLazySingleton(() => DeleteSlotUseCase(getIt()));
-  getIt.registerLazySingleton(() => AddBulkSlotsUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetScheduleConfigUseCase(getIt<ScheduleRepository>()));
-  getIt.registerLazySingleton(() => SaveScheduleConfigUseCase(getIt<ScheduleRepository>()));
-  getIt.registerLazySingleton(() => GenerateMonthlySlotsUseCase(getIt<ScheduleRepository>()));
-  getIt.registerLazySingleton(() => DeleteScheduleConfigUseCase(getIt<ScheduleRepository>()));
-  getIt.registerFactory(() => SlotCubit(
-    getSlotsUseCase: getIt(),
-    addSlotUseCase: getIt(),
-    updateSlotUseCase: getIt(),
-    deleteSlotUseCase: getIt(),
-    addBulkSlotsUseCase: getIt(),
-  ));
-  getIt.registerFactory(() => ScheduleCubit(
-    getScheduleConfig: getIt(),
-    saveScheduleConfig: getIt(),
-    generateMonthlySlots: getIt(),
-    deleteScheduleConfig: getIt(),
-  ));
-  
+        getCarsUseCase: getIt(),
+        addCarUseCase: getIt(),
+        updateCarUseCase: getIt(),
+        deleteCarUseCase: getIt(),
+      ));
+
   // Profile Feature
   getIt.registerLazySingleton<ProfileRepository>(
     () => ProfileRepositoryImpl(
@@ -213,7 +122,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => GetUserProfileUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateProfileUseCase(getIt()));
   getIt.registerFactory(() => ProfileCubit(
-    getUserProfileUseCase: getIt(),
-    updateProfileUseCase: getIt(),
-  ));
+        getUserProfileUseCase: getIt(),
+        updateProfileUseCase: getIt(),
+      ));
 }

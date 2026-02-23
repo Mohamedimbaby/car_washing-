@@ -105,7 +105,7 @@ class _MyCarsPageState extends State<MyCarsPage> {
           Icon(
             Icons.directions_car_outlined,
             size: 100,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           const Text(

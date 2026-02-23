@@ -11,6 +11,11 @@ class UserProfileModel extends UserProfileEntity {
     super.address,
     required super.registrationDate,
     required super.appId,
+    required super.role,
+    super.isEmailVerified = false,
+    super.isPhoneVerified = false,
+    required super.createdAt,
+    required super.updatedAt,
   });
 
   factory UserProfileModel.fromFirestore(DocumentSnapshot doc) {
@@ -22,8 +27,14 @@ class UserProfileModel extends UserProfileEntity {
       phone: data['phone'],
       profilePhoto: data['profilePhoto'],
       address: data['address'],
-      registrationDate: (data['registrationDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      registrationDate:
+          (data['registrationDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       appId: data['appId'] ?? '',
+      role: data['role'] ?? 'customer',
+      isEmailVerified: data['isEmailVerified'] ?? false,
+      isPhoneVerified: data['isPhoneVerified'] ?? false,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -36,6 +47,11 @@ class UserProfileModel extends UserProfileEntity {
       'address': address,
       'registrationDate': Timestamp.fromDate(registrationDate),
       'appId': appId,
+      'role': role,
+      'isEmailVerified': isEmailVerified,
+      'isPhoneVerified': isPhoneVerified,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
 }

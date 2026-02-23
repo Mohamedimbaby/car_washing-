@@ -18,6 +18,7 @@ abstract class BookingRepository {
 
   ResultFuture<BookingEntity> createBooking({
     required String vehicleId,
+    required String providerId,
     required String centerId,
     String? branchId,
     required ServiceType serviceType,

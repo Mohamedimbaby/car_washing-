@@ -4,9 +4,42 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../widgets/splash_background_widget.dart';
+import '../widgets/splash_logo_widget.dart';
+import '../widgets/splash_tagline_widget.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fadeAnim;
+  late final Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _scaleAnim = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut),
+    );
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,29 +51,27 @@ class SplashPage extends StatelessWidget {
           Navigator.of(context).pushReplacementNamed(AppRouter.login);
         }
       },
-      child: const Scaffold(
-        backgroundColor: AppColors.primary,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.navyDark, AppColors.navyMedium],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Stack(
             children: [
-              Icon(
-                Icons.local_car_wash,
-                size: 100,
-                color: AppColors.white,
-              ),
-              SizedBox(height: 24),
-              Text(
-                'Car Wash',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.white,
+              const SplashBackgroundWidget(),
+              Center(
+                child: SplashLogoWidget(
+                  fade: _fadeAnim,
+                  scale: _scaleAnim,
                 ),
               ),
-              SizedBox(height: 48),
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: SplashTaglineWidget(),
               ),
             ],
           ),
